@@ -5,14 +5,14 @@
 //! 1) call speller.train() with a large text string to train the language model
 //! 2) call speller.correct(word) to retrieve the correction for a given word
 
-use std::collections::HashMap;
 use regex::Regex;
+use std::collections::HashMap;
 
 pub struct Checker {
     /// The letters of the alphabet
     letters: String,
     /// frequency map of words
-    freq_words: HashMap<String, u32>
+    freq_words: HashMap<String, u32>,
 }
 
 impl Checker {
@@ -41,27 +41,44 @@ impl Checker {
         }
 
         let mut candidates: HashMap<u32, String> = HashMap::new();
-        let list = self.edits(word);
+        let possible_edits = self.edits(word);
 
         // find candidates in the edits of the word
-        for edit in &list {
-            if let Some(value) = self.freq_words.get(edit) {
-                candidates.insert(*value, edit.to_string());
-            }
-        }
+        possible_edits
+            .iter()
+            .filter_map(|edit| {
+                self.freq_words
+                    .get(edit)
+                    .map(|value| (*value, edit.to_string()))
+            })
+            .for_each(|(freq, word)| {
+                candidates.insert(freq, word);
+            });
 
         if let Some(c) = candidates.iter().max_by_key(|&entry| entry.0) {
             return c.1.to_string();
         }
 
+        candidates.clear();
+
         // find candidates in the edits of the edits
-        for edit in &list {
-            for w in self.edits(&edit) {
-                if let Some(value) = self.freq_words.get(&w) {
-                    candidates.insert(*value, w);
-                }
-            }
-        }
+        let edits_of_edits: Vec<String> = possible_edits
+            .iter()
+            .flat_map(|edit| self.edits(edit))
+            .collect();
+
+        edits_of_edits
+            .iter()
+            .filter_map(|w| self.freq_words.get(w).map(|value| (*value, w.clone())))
+            .for_each(|(freq, word)| {
+                candidates.insert(freq, word);
+            });
+
+        candidates
+            .iter()
+            .max_by_key(|&entry| entry.0)
+            .map(|c| c.1.to_string())
+            .unwrap_or_else(|| word.to_string());
 
         if let Some(c) = candidates.iter().max_by_key(|&entry| entry.0) {
             return c.1.to_string();
@@ -77,36 +94,36 @@ impl Checker {
         // Generate edits by deleting, transposing, replacing, and inserting letters
 
         // deletion
-        for i in 0 .. word.len() {
+        edits.extend((0..word.len()).map(|i| {
             let (first, last) = word.split_at(i);
-            edits.push([first, &last[1..]].concat());
-        }
+            [first, &last[1..]].concat()
+        }));
 
         // transposition
-        for i in 0 .. word.len() - 1 {
+        edits.extend((0..word.len() - 1).map(|i| {
             let (first, last) = word.split_at(i);
-            edits.push([first, &last[1..2], &last[..1], &last[2..]].concat());
-        }
+            [first, &last[1..2], &last[..1], &last[2..]].concat()
+        }));
 
         // alteration
-        for i in 0 .. word.len() {
-            for c in self.letters.chars() {
+        edits.extend((0..word.len()).flat_map(|i| {
+            self.letters.chars().map(move |c| {
                 let (first, last) = word.split_at(i);
                 let mut buffer = [0; 1];
                 let result = c.encode_utf8(&mut buffer);
-                edits.push([first, result, &last[1..]].concat());
-            }
-        }
+                [first, result, &last[1..]].concat()
+            })
+        }));
 
         // insertion
-        for i in 0 .. word.len() + 1 {
-            for c in self.letters.chars() {
+        edits.extend((0..word.len() + 1).flat_map(|i| {
+            self.letters.chars().map(move |c| {
                 let (first, last) = word.split_at(i);
                 let mut buffer = [0; 1];
                 let result = c.encode_utf8(&mut buffer);
-                edits.push([first, result, last].concat());
-            }
-        }
+                [first, result, last].concat()
+            })
+        }));
 
         edits
     }
