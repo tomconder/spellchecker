@@ -30,7 +30,7 @@ let mut spellchecker = Checker::new();
 
 // train the spellchecker with a large text file 
 let contents = fs::read_to_string("big.txt").expect("Something went wrong");
-spellchecker.train( & contents);
+spellchecker.train(&contents);
 
 // the expected value is "poetry"
 println!("{} -> {}", "peotryy", spellchecker.correct("peotryy"));
