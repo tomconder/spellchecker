@@ -12,3 +12,4 @@ repository = "https://github.com/tomconder/spellchecker"
 version = "0.1.0"
 
 [dependencies]
+regex = "1.11.1"
