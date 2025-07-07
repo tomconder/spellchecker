@@ -109,6 +109,7 @@ impl Default for Checker {
         Self::new()
     }
 }
+
 #[cfg(test)]
 mod tests {
     use super::Checker;
