@@ -28,7 +28,7 @@ Now you can create a `Checker` instance and use it to check spelling:
 ```rust
 let mut spellchecker = Checker::new();
 
-// train the spellchecker with a large text file 
+// train the spellchecker with a large text file
 let contents = fs::read_to_string("big.txt").expect("Something went wrong");
 spellchecker.train(&contents);
 

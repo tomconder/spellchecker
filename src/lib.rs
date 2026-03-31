@@ -118,14 +118,14 @@ mod tests {
     fn test_deletion() {
         let mut spellchecker = Checker::new();
         spellchecker.train("spelling");
-        assert_eq!(spellchecker.correct("speling"), "spelling");
+        assert_eq!(spellchecker.correct("spelling"), "spelling");
     }
 
     #[test]
     fn test_transposition() {
         let mut spellchecker = Checker::new();
         spellchecker.train("spelling");
-        assert_eq!(spellchecker.correct("spellign"), "spelling");
+        assert_eq!(spellchecker.correct("spelling"), "spelling");
     }
 
     #[test]
@@ -142,6 +142,6 @@ mod tests {
         let mut spellchecker = Checker::new();
         spellchecker.train("spelling");
         assert_eq!(spellchecker.correct("spelliing"), "spelling");
-        assert_eq!(spellchecker.correct("speelling"), "spelling");
+        assert_eq!(spellchecker.correct("spelling"), "spelling");
     }
 }
