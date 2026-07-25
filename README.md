@@ -13,13 +13,12 @@ To use the library, add the following to your `Cargo.toml` manifest file:
 
 ```toml
 [dependencies]
-regex = { git = "https://github.com/tomconder/spellchecker.git" }
+spellchecker = { git = "https://github.com/tomconder/spellchecker.git" }
 ```
 
 Then in your code, you can use the library as follows:
 
 ```rust
-extern crate spellchecker;
 use spellchecker::Checker;
 ```
 

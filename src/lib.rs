@@ -1,5 +1,5 @@
 //! A spell checker based on the probabilistic algorithm described by Peter Norvig
-// in http://norvig.com/spell-correct.html
+//! in <http://norvig.com/spell-correct.html>
 //!
 //! Using the checker involves two steps:
 //! 1) call speller.train() with a large text string to train the language model
@@ -8,9 +8,9 @@
 use regex::Regex;
 use std::collections::HashMap;
 
+const LETTERS: &str = "abcdefghijklmnopqrstuvwxyz";
+
 pub struct Checker {
-    /// The letters of the alphabet
-    letters: &'static str,
     /// frequency map of words
     freq_words: HashMap<String, u32>,
     /// Cached regex for word extraction
@@ -21,7 +21,6 @@ impl Checker {
     /// Creates a new `Checker` instance with the alphabet and an empty frequency map.
     pub fn new() -> Self {
         Checker {
-            letters: "abcdefghijklmnopqrstuvwxyz",
             freq_words: HashMap::new(),
             word_regex: Regex::new(r"[a-z]+").unwrap(),
         }
@@ -37,6 +36,8 @@ impl Checker {
 
     /// A function to correct a word based on the frequency map
     pub fn correct(&self, word: &str) -> String {
+        let word = &word.to_lowercase();
+
         // find word in the frequency map
         if self.freq_words.contains_key(word) {
             return word.to_string();
@@ -68,8 +69,7 @@ impl Checker {
     }
 
     fn edits(&self, word: &str) -> Vec<String> {
-        let word_chars: Vec<char> = word.chars().collect();
-        let word_len = word_chars.len();
+        let word_len = word.len();
         let mut edits = Vec::with_capacity(word_len * 54 + 26);
 
         // deletion
@@ -86,7 +86,7 @@ impl Checker {
 
         // alteration
         for i in 0..word_len {
-            for c in self.letters.chars() {
+            for c in LETTERS.chars() {
                 let (first, last) = word.split_at(i);
                 edits.push(format!("{}{}{}", first, c, &last[1..]));
             }
@@ -94,7 +94,7 @@ impl Checker {
 
         // insertion
         for i in 0..=word_len {
-            for c in self.letters.chars() {
+            for c in LETTERS.chars() {
                 let (first, last) = word.split_at(i);
                 edits.push(format!("{}{}{}", first, c, last));
             }
@@ -143,5 +143,12 @@ mod tests {
         spellchecker.train("spelling");
         assert_eq!(spellchecker.correct("spelliing"), "spelling");
         assert_eq!(spellchecker.correct("spelling"), "spelling");
+    }
+
+    #[test]
+    fn test_correct_lowercases_input() {
+        let mut spellchecker = Checker::new();
+        spellchecker.train("spelling");
+        assert_eq!(spellchecker.correct("Spelling"), "spelling");
     }
 }
