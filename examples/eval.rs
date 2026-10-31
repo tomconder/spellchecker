@@ -12,7 +12,14 @@ fn main() {
     let mut checker = Checker::new();
     checker.train(&fs::read_to_string("src/bin/big.txt").expect("read src/bin/big.txt"));
 
-    for path in ["data/spell-testset1.txt", "data/spell-testset2.txt"] {
+    // minimum correct count per test set; raise it when accuracy improves
+    let sets = [
+        ("data/spell-testset1.txt", 202),
+        ("data/spell-testset2.txt", 270),
+    ];
+    let mut failed = false;
+
+    for (path, min_good) in sets {
         let text = fs::read_to_string(path).unwrap_or_else(|e| panic!("read {path}: {e}"));
         // each line is "right: wrong1 wrong2 ..."
         let pairs: Vec<(&str, &str)> = text
@@ -44,10 +51,18 @@ fn main() {
         let n = pairs.len();
 
         println!(
-            "{path}: {:.0}% of {n} correct ({:.0}% unknown) at {:.0} words/s",
+            "{path}: {:.0}% of {n} correct ({good}, minimum {min_good}) ({:.0}% unknown) at {:.0} words/s",
             100.0 * good as f64 / n as f64,
             100.0 * unknown as f64 / n as f64,
             n as f64 / secs,
         );
+        if good < min_good {
+            eprintln!("{path}: accuracy dropped, {good} correct is below the minimum {min_good}");
+            failed = true;
+        }
+    }
+
+    if failed {
+        std::process::exit(1);
     }
 }
