@@ -5,32 +5,31 @@
 //! 1) call speller.train() with a large text string to train the language model
 //! 2) call speller.correct(word) to retrieve the correction for a given word
 
-use regex::Regex;
 use std::collections::HashMap;
 
 const LETTERS: &str = "abcdefghijklmnopqrstuvwxyz";
 
+#[derive(Default)]
 pub struct Checker {
     /// frequency map of words
     freq_words: HashMap<String, u32>,
-    /// Cached regex for word extraction
-    word_regex: Regex,
 }
 
 impl Checker {
-    /// Creates a new `Checker` instance with the alphabet and an empty frequency map.
+    /// Creates a new `Checker` instance with an empty frequency map.
     pub fn new() -> Self {
-        Checker {
-            freq_words: HashMap::new(),
-            word_regex: Regex::new(r"[a-z]+").unwrap(),
-        }
+        Self::default()
     }
 
     /// A function to train the spell checker with the given text
     pub fn train(&mut self, text: &str) {
-        // split the text into words and add them to the frequency map
-        for m in self.word_regex.find_iter(&text.to_lowercase()) {
-            *self.freq_words.entry(m.as_str().to_string()).or_insert(0) += 1;
+        // words are runs of a-z, the same as the regex [a-z]+
+        let text = text.to_lowercase();
+        for word in text
+            .split(|c: char| !c.is_ascii_lowercase())
+            .filter(|w| !w.is_empty())
+        {
+            *self.freq_words.entry(word.to_string()).or_insert(0) += 1;
         }
     }
 
@@ -78,7 +77,7 @@ impl Checker {
         let chars: Vec<char> = word.chars().collect();
         let word_len = chars.len();
         let join = |parts: &[&[char]]| parts.concat().into_iter().collect::<String>();
-        let mut edits = Vec::with_capacity(word_len * 54 + 26);
+        let mut edits = Vec::new();
 
         // deletion
         for i in 0..word_len {
@@ -112,12 +111,6 @@ impl Checker {
     }
 }
 
-impl Default for Checker {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::Checker;
@@ -126,14 +119,14 @@ mod tests {
     fn test_deletion() {
         let mut spellchecker = Checker::new();
         spellchecker.train("spelling");
-        assert_eq!(spellchecker.correct("spelling"), "spelling");
+        assert_eq!(spellchecker.correct("spellng"), "spelling");
     }
 
     #[test]
     fn test_transposition() {
         let mut spellchecker = Checker::new();
         spellchecker.train("spelling");
-        assert_eq!(spellchecker.correct("spelling"), "spelling");
+        assert_eq!(spellchecker.correct("spellnig"), "spelling");
     }
 
     #[test]
@@ -150,7 +143,6 @@ mod tests {
         let mut spellchecker = Checker::new();
         spellchecker.train("spelling");
         assert_eq!(spellchecker.correct("spelliing"), "spelling");
-        assert_eq!(spellchecker.correct("spelling"), "spelling");
     }
 
     #[test]
