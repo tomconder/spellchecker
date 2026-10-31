@@ -71,3 +71,7 @@ cargo run --release --example eval
 The current results match the numbers Norvig reports for his own version. The
 checker corrects 75% of the 270 words in the first set and 68% of the 400 words
 in the second set. Add `-- -v` to print each wrong correction.
+
+CI runs the evaluation on every push and pull request. The run fails if either
+test set has fewer correct words than the minimum in `examples/eval.rs`, which
+is the current result. When a change improves accuracy, raise the minimum.
