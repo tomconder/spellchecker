@@ -1,6 +1,7 @@
 # spellchecker
 
-A spell checker based on the algorithm described by Peter Norvig, Director of Research at Google.
+A spell checker based on the algorithm described by Peter Norvig, Director of
+Research at Google.
 
 ## Features
 
@@ -39,6 +40,8 @@ println!("{} -> {}", "peotryy", spellchecker.correct("peotryy"));
 
 ### Norvig's algorithm
 
-[Peter Norvig's spell checker](http://norvig.com/spell-correct.html) uses a probabilistic model based on a large corpus
-of words to determine the most likely correct spelling. It works by generating a set of possible corrections, or edits,
-for a misspelled word. Then it ranks those corrections based on their likelihood of being the correct spelling.
+[Peter Norvig's spell checker](http://norvig.com/spell-correct.html) uses a
+probabilistic model based on a large corpus of words to determine the most
+likely correct spelling. It works by generating a set of possible corrections,
+or edits, for a misspelled word. Then it ranks those corrections based on their
+likelihood of being the correct spelling.

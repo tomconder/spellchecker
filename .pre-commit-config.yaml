@@ -11,7 +11,7 @@ repos:
       - id: gitleaks
 
   - repo: https://github.com/sirosen/texthooks
-    rev: 0.7.1
+    rev: 1.0.0
     hooks:
       - id: fix-smartquotes
 
@@ -30,14 +30,14 @@ repos:
       - id: check-merge-conflict
 
   - repo: https://github.com/crate-ci/typos
-    rev: v1.44.0
+    rev: v1.51.1
     hooks:
       - id: typos
         exclude: src/bin/big.txt
 
-  - repo: https://github.com/MaratFM/pre-commit-remark
-    rev: 1.0.0
+  - repo: https://github.com/DavidAnson/markdownlint-cli2
+    rev: v0.24.0
     hooks:
-      - id: remark
-        args: ["--output", "--frail"]
-        files: "\\.md$"
+      - id: markdownlint-cli2
+        language_version: lts
+        args: ["--fix"]
