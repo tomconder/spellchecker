@@ -11,8 +11,7 @@ fn main() {
     }
 
     let mut spellchecker = Checker::new();
-    let contents =
-        fs::read_to_string(&args[1]).expect("Something went wrong reading the file");
+    let contents = fs::read_to_string(&args[1]).expect("Something went wrong reading the file");
     spellchecker.train(&contents);
 
     println!("{} -> {}", args[2], spellchecker.correct(&args[2]));
