@@ -10,7 +10,7 @@ Add the library to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-spellchecker = "0.1"
+spellchecker = "0.2"
 ```
 
 Train a `Checker` on a large text file, and then call `correct` on a word:
