@@ -1,47 +1,58 @@
 # spellchecker
 
-A spell checker based on the algorithm described by Peter Norvig, Director of
-Research at Google.
+A Rust library that corrects misspelled words, using the method that Peter
+Norvig describes in [How to Write a Spelling
+Corrector](http://norvig.com/spell-correct.html).
 
-## Features
+## Usage
 
-* Can be trained one or more times with a large corpus of words
-* Probabilistic model for determining the most likely correct spelling
-
-## Installation and Running
-
-To use the library, add the following to your `Cargo.toml` manifest file:
+Add the library to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
 spellchecker = { git = "https://github.com/tomconder/spellchecker.git" }
 ```
 
-Then in your code, you can use the library as follows:
+Train a `Checker` on a large text file, and then call `correct` on a word:
 
 ```rust
 use spellchecker::Checker;
-```
+use std::fs;
 
-Now you can create a `Checker` instance and use it to check spelling:
-
-```rust
 let mut spellchecker = Checker::new();
 
-// train the spellchecker with a large text file
 let contents = fs::read_to_string("big.txt").expect("Something went wrong");
 spellchecker.train(&contents);
 
-// the expected value is "poetry"
+// prints "peotryy -> poetry"
 println!("{} -> {}", "peotryy", spellchecker.correct("peotryy"));
 ```
 
-## Algorithm
+This repository includes a sample training file at `src/bin/big.txt`. You can
+call `train` more than once, and each call adds to the word counts.
 
-### Norvig's algorithm
+## Command-line tool
 
-[Peter Norvig's spell checker](http://norvig.com/spell-correct.html) uses a
-probabilistic model based on a large corpus of words to determine the most
-likely correct spelling. It works by generating a set of possible corrections,
-or edits, for a misspelled word. Then it ranks those corrections based on their
-likelihood of being the correct spelling.
+The repository also has a small command-line tool that trains on a file and
+corrects one word. Run it from the repository root with Cargo:
+
+```sh
+cargo run --bin spellchecker -- src/bin/big.txt peotryy
+```
+
+The tool prints `peotryy -> poetry`. It takes exactly two arguments, the
+training file and the word, and it exits with status 1 if you give it a
+different number of arguments.
+
+## How it works
+
+The checker counts how often each word appears in the training text, and it
+picks the most frequent known word that is close to the input. First, if the
+input is a known word, the checker returns it. Second, it makes every string
+that is one edit away from the input, and it returns the most frequent known
+word among them. An edit is a deletion, a swap of two adjacent letters, a
+change of one letter, or an insertion of one letter. Third, it tries the strings
+that are two edits away in the same way. If no known word is found, the checker
+returns the input unchanged.
+
+The checker converts all text to lowercase, so it returns lowercase words.
