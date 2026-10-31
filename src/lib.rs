@@ -34,6 +34,11 @@ impl Checker {
         }
     }
 
+    /// Returns true if the word appears in the training text
+    pub fn is_known(&self, word: &str) -> bool {
+        self.freq_words.contains_key(&word.to_lowercase())
+    }
+
     /// A function to correct a word based on the frequency map
     pub fn correct(&self, word: &str) -> String {
         let word = &word.to_lowercase();
