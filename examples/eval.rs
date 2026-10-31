@@ -14,8 +14,8 @@ fn main() {
 
     // minimum correct count per test set; raise it when accuracy improves
     let sets = [
-        ("data/spell-testset1.txt", 202),
-        ("data/spell-testset2.txt", 270),
+        ("data/spell-testset1.txt", 212),
+        ("data/spell-testset2.txt", 286),
     ];
     let mut failed = false;
 
