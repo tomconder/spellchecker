@@ -34,6 +34,11 @@ impl Checker {
         }
     }
 
+    /// Returns true if the word appears in the training text
+    pub fn is_known(&self, word: &str) -> bool {
+        self.freq_words.contains_key(&word.to_lowercase())
+    }
+
     /// A function to correct a word based on the frequency map
     pub fn correct(&self, word: &str) -> String {
         let word = &word.to_lowercase();
@@ -69,34 +74,37 @@ impl Checker {
     }
 
     fn edits(&self, word: &str) -> Vec<String> {
-        let word_len = word.len();
+        // index by char, not byte, so non-ASCII input can't split a character
+        let chars: Vec<char> = word.chars().collect();
+        let word_len = chars.len();
+        let join = |parts: &[&[char]]| parts.concat().into_iter().collect::<String>();
         let mut edits = Vec::with_capacity(word_len * 54 + 26);
 
         // deletion
         for i in 0..word_len {
-            let (first, last) = word.split_at(i);
-            edits.push([first, &last[1..]].concat());
+            edits.push(join(&[&chars[..i], &chars[i + 1..]]));
         }
 
         // transposition
         for i in 0..word_len.saturating_sub(1) {
-            let (first, last) = word.split_at(i);
-            edits.push([first, &last[1..2], &last[..1], &last[2..]].concat());
+            edits.push(join(&[
+                &chars[..i],
+                &[chars[i + 1], chars[i]],
+                &chars[i + 2..],
+            ]));
         }
 
         // alteration
         for i in 0..word_len {
             for c in LETTERS.chars() {
-                let (first, last) = word.split_at(i);
-                edits.push(format!("{}{}{}", first, c, &last[1..]));
+                edits.push(join(&[&chars[..i], &[c], &chars[i + 1..]]));
             }
         }
 
         // insertion
         for i in 0..=word_len {
             for c in LETTERS.chars() {
-                let (first, last) = word.split_at(i);
-                edits.push(format!("{}{}{}", first, c, last));
+                edits.push(join(&[&chars[..i], &[c], &chars[i..]]));
             }
         }
 
@@ -150,5 +158,13 @@ mod tests {
         let mut spellchecker = Checker::new();
         spellchecker.train("spelling");
         assert_eq!(spellchecker.correct("Spelling"), "spelling");
+    }
+
+    #[test]
+    fn test_non_ascii_input() {
+        let mut spellchecker = Checker::new();
+        spellchecker.train("cafe");
+        assert_eq!(spellchecker.correct("café"), "cafe");
+        assert_eq!(spellchecker.correct("ñ"), "ñ");
     }
 }

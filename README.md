@@ -57,3 +57,17 @@ that are two edits away in the same way. If no known word is found, the checker
 returns the input unchanged.
 
 The checker converts all text to lowercase, so it returns lowercase words.
+
+## Evaluation
+
+The repository includes Peter Norvig's two test sets of misspelled words in
+`data/`. To measure accuracy and speed, run this command from the repository
+root:
+
+```sh
+cargo run --release --example eval
+```
+
+The current results match the numbers Norvig reports for his own version. The
+checker corrects 75% of the 270 words in the first set and 68% of the 400 words
+in the second set. Add `-- -v` to print each wrong correction.
