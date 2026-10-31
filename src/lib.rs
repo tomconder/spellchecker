@@ -38,20 +38,27 @@ impl Checker {
         self.freq_words.contains_key(&word.to_lowercase())
     }
 
-    /// A function to correct a word based on the frequency map
+    /// Corrects a word based on the frequency map, keeping the input's case:
+    /// ALL CAPS stays all caps, a capital first letter stays capital, and
+    /// anything else is lowercase. A word with no correction is returned unchanged.
     pub fn correct(&self, word: &str) -> String {
-        let word = &word.to_lowercase();
+        match self.find_correction(&word.to_lowercase()) {
+            Some(correction) => match_case(word, correction),
+            None => word.to_string(),
+        }
+    }
 
+    fn find_correction(&self, word: &str) -> Option<String> {
         // find word in the frequency map
         if self.freq_words.contains_key(word) {
-            return word.to_string();
+            return Some(word.to_string());
         }
 
         let possible_edits = self.edits(word);
 
         // find candidates in the edits of the word
         if let Some(candidate) = self.find_best_candidate(&possible_edits) {
-            return candidate;
+            return Some(candidate);
         }
 
         // find candidates in the edits of the edits
@@ -61,7 +68,6 @@ impl Checker {
             .collect();
 
         self.find_best_candidate(&edits_of_edits)
-            .unwrap_or_else(|| word.to_string())
     }
 
     fn find_best_candidate(&self, candidates: &[String]) -> Option<String> {
@@ -111,6 +117,21 @@ impl Checker {
     }
 }
 
+/// Gives the lowercase `word` the case pattern of `original`.
+fn match_case(original: &str, word: String) -> String {
+    let has_upper = original.chars().any(char::is_uppercase);
+    if has_upper && !original.chars().any(char::is_lowercase) {
+        return word.to_uppercase();
+    }
+    if original.chars().next().is_some_and(char::is_uppercase) {
+        let mut chars = word.chars();
+        if let Some(first) = chars.next() {
+            return first.to_uppercase().chain(chars).collect();
+        }
+    }
+    word
+}
+
 #[cfg(test)]
 mod tests {
     use super::Checker;
@@ -146,10 +167,20 @@ mod tests {
     }
 
     #[test]
-    fn test_correct_lowercases_input() {
+    fn test_preserves_case() {
         let mut spellchecker = Checker::new();
         spellchecker.train("spelling");
-        assert_eq!(spellchecker.correct("Spelling"), "spelling");
+        assert_eq!(spellchecker.correct("Spelling"), "Spelling");
+        assert_eq!(spellchecker.correct("Spellng"), "Spelling");
+        assert_eq!(spellchecker.correct("SPELLNG"), "SPELLING");
+        assert_eq!(spellchecker.correct("sPELLNG"), "spelling");
+    }
+
+    #[test]
+    fn test_unknown_word_unchanged() {
+        let mut spellchecker = Checker::new();
+        spellchecker.train("spelling");
+        assert_eq!(spellchecker.correct("Xyz"), "Xyz");
     }
 
     #[test]
