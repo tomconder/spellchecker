@@ -10,7 +10,7 @@ Add the library to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-spellchecker = { git = "https://github.com/tomconder/spellchecker.git" }
+spellchecker = "0.1"
 ```
 
 Train a `Checker` on a large text file, and then call `correct` on a word:
@@ -33,8 +33,9 @@ call `train` more than once, and each call adds to the word counts.
 
 ## Command-line tool
 
-The repository also has a small command-line tool that trains on a file and
-corrects one word. Run it from the repository root with Cargo:
+The crate also has a small command-line tool that trains on a file and corrects
+one word. You can install it with `cargo install spellchecker`, or you can run
+it from the repository root with Cargo:
 
 ```sh
 cargo run --bin spellchecker -- src/bin/big.txt peotryy
