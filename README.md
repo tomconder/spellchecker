@@ -56,7 +56,11 @@ change of one letter, or an insertion of one letter. Third, it tries the strings
 that are two edits away in the same way. If no known word is found, the checker
 returns the input unchanged.
 
-The checker converts all text to lowercase, so it returns lowercase words.
+The checker matches words without regard to case, and it returns the correction
+in the case of the input. If the input is all capitals, the correction is all
+capitals, so `PEOTRYY` becomes `POETRY`. If the input starts with a capital, the
+correction starts with one, so `Peotryy` becomes `Poetry`. Otherwise the
+correction is lowercase.
 
 ## Evaluation
 
